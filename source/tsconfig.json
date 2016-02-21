@@ -1,0 +1,20 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "noImplicitAny": true,
+        "removeComments": true,
+        "preserveConstEnums": true,
+        "sourceMap": true
+    },
+    "filesGlob": [
+        "**/*.ts"
+    ],
+    "files": [
+        "configurit.ts",
+        "json-configuration-file-writer.ts",
+        "json-schema-reader.ts"
+    ],
+    "atom": {
+        "rewriteTsconfig": true
+    }
+}

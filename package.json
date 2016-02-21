@@ -1,0 +1,30 @@
+{
+  "name": "configurit",
+  "version": "0.1.0",
+  "description": "No hassle configuration generation",
+  "main": "configurit.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jamesrichford/configurit.git"
+  },
+  "keywords": [
+    "configuration"
+  ],
+  "author": "James Richford <=> (=)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jamesrichford/configurit/issues"
+  },
+  "homepage": "https://github.com/jamesrichford/configurit#readme",
+  "dependencies": {
+    "commander": "^2.9.0",
+    "promptly": "^1.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^1.7.5",
+    "tsd": "^0.6.5"
+  }
+}
