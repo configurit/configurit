@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 ///<reference path="../typings/commander/commander.d.ts"/>
 ///<reference path="../typings/promptly/promptly.d.ts"/>
 import * as Commander from "commander";
