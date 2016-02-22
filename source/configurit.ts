@@ -17,15 +17,41 @@ configurit
   .option("-o, --outputFile [location]", "Where it's gonna be")
   .parse(process.argv);
 
-let readSchema = (path: string) => {
-  let schemaReader = new JsonSchemaReader();
-  schemaReader.loadSchema(path);
 
-  getDetails();
+let schemaReader = new JsonSchemaReader();
+
+let readSchema = (path: string) => {
+  schemaReader.loadSchema(path, getDetails);
 }
+let i = 0;
 
 let getDetails = () => {
-  getOutput();
+   let properties = schemaReader.getProperties();
+   if (i < Object.keys(properties).length) {
+
+      let propertyName = Object.keys(properties)[i];
+
+      let prompt = "";
+
+      if (properties[propertyName].title) {
+         prompt = properties[propertyName].title + "\r\n";
+      }
+      if (properties[propertyName].description) {
+         prompt = properties[propertyName].description + "\r\n";
+      }
+
+      prompt += propertyName;
+
+      Promptly.prompt(prompt + ">", (err: Error, value: string) => {
+         configWriter.set(propertyName, value);
+         i++;
+         getDetails();
+      });
+   }
+   else {
+      getOutput();
+   }
+
 }
 
 let getOutput = () => {
