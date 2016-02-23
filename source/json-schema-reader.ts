@@ -4,6 +4,10 @@ export class JsonSchemaReader {
 
    private _schema: Object;
 
+   public getSchema(): any {
+     return this._schema;
+   }
+
    public getProperties(): any {
       return this._schema["properties"];
    }
@@ -15,7 +19,7 @@ export class JsonSchemaReader {
          process.exit(1);
       }
 
-      this._schema = JSON.parse(data);
+      this._schema = JSON.parse(data.toString());
 
       callback();
     })

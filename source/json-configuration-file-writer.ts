@@ -5,8 +5,20 @@ export class JsonConfigurationFileWriter {
   private _config: Object = {};
 
   public set(path: string, value: any) {
+    let map = path.split(".");
 
-    this._config[path] = value;
+    let parent = this._config;
+
+    for (let i = 0; i < map.length - 1; i++) {
+
+      if (this._config === undefined) {
+
+        parent[map[i]] = {};
+        parent = parent[map[i]];
+      }
+    }
+
+    parent[map[map.length - 1]] = value;
   }
 
   public writeFile(path: string) {

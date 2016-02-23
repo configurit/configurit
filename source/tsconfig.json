@@ -1,5 +1,6 @@
 {
     "compilerOptions": {
+        "target": "es6",
         "module": "commonjs",
         "noImplicitAny": true,
         "removeComments": true,
@@ -10,6 +11,7 @@
         "**/*.ts"
     ],
     "files": [
+        "config-generator.ts",
         "configurit.ts",
         "json-configuration-file-writer.ts",
         "json-schema-reader.ts"

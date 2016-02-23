@@ -7,6 +7,9 @@ import * as Promptly from "promptly";
 
 import { JsonConfigurationFileWriter } from "./json-configuration-file-writer";
 import { JsonSchemaReader } from "./json-schema-reader";
+import { ConfigGenerator } from "./config-generator";
+
+import * as FileSystem from "fs";
 
 let configWriter = new JsonConfigurationFileWriter();
 
@@ -19,36 +22,118 @@ configurit
   .option("-o, --outputFile [location]", "Where it's gonna be")
   .parse(process.argv);
 
+let generator = new ConfigGenerator();
+
+let getDetails = (currentConfig?: any) => {
+  generator.getUserInput(true, true).then((config: any) => {
+    console.log(config);
+    Promptly.confirm("Lookin good?", (err: Error, value: string) => {
+        //configWriter.set("name", value);
+        console.log(value);
+
+        if (value) {
+          checkOutput(config);
+        }
+        else {
+          getDetails(config);
+        }
+    });
+  });
+}
+
+//console.log("ready to do something else whilst waiting");
 
 let schemaReader = new JsonSchemaReader();
 
 let readSchema = (path: string) => {
-  schemaReader.loadSchema(path, getDetails);
+  schemaReader.loadSchema(path, () => {
+  generator.loadSchema(schemaReader.getSchema());
+  getDetails() });
 }
+
+let checkOutput = (config: any) => {
+
+  if (configurit["outputFile"]) {
+    save(config, configurit["outputFile"]);
+  }
+
+  Promptly.prompt("Output file: ", { validator: null }, (err: Error, value: string) => {
+    save(config, value);
+
+  });
+}
+
+let save = (config: any, path: string) => {
+
+    FileSystem.writeFile(path, JSON.stringify(config), (error: Error) => {
+      console.log("done writing");
+      process.exit(0);
+    });
+}
+
+if(configurit["schemaLocation"]) {
+    readSchema(configurit["schemaLocation"]);
+}
+else {
+  Promptly.prompt("Schema location: ", { validator: null }, (err: Error, value: string) => {
+      //configWriter.set("name", value);
+      readSchema(value);
+  });
+}
+/*
 let i = 0;
 
-let getDetails = () => {
+let counts = {
+  "": 0
+}
+
+let getDetails = (objectName?: string) => {
+     if (counts[objectName] === undefined) {
+       counts[objectName] = 0;
+     }
+
    let properties = schemaReader.getProperties();
-   if (i < Object.keys(properties).length) {
+   if (objectName) {
+     let map = objectName.split(".");
 
-      let propertyName = Object.keys(properties)[i];
+     for (let item of map) {
+       properties = properties[item].properties;
+     }
+   }
 
-      let prompt = "";
+   if (counts[objectName] < Object.keys(properties).length) {
 
-      if (properties[propertyName].title) {
-         prompt = properties[propertyName].title + "\r\n";
+      let propertyName = Object.keys(properties)[counts[objectName]];
+
+      if (properties[propertyName].type === "object") {
+        let x = propertyName;
+        if (objectName) {
+          x = objectName + "." + propertyName;
+        }
+        getDetails(x);
       }
-      if (properties[propertyName].description) {
-         prompt = properties[propertyName].description + "\r\n";
-      }
+      else {
 
-      prompt += propertyName;
+        let prompt = "\r\n";
 
-      Promptly.prompt(prompt + ">", (err: Error, value: string) => {
-         configWriter.set(propertyName, value);
-         i++;
-         getDetails();
-      });
+        if (properties[propertyName].title) {
+           prompt = properties[propertyName].title + "\r\n";
+        }
+        if (properties[propertyName].description) {
+           prompt = properties[propertyName].description + "\r\n";
+        }
+
+        prompt += propertyName;
+
+        Promptly.prompt(prompt + " >", (err: Error, value: string) => {
+          if (objectName) {
+            propertyName = objectName + "." + propertyName;
+          }
+           configWriter.set(propertyName, value);
+           counts[objectName]++;
+           getDetails();
+        });
+    }
    }
    else {
       getOutput();
@@ -88,3 +173,4 @@ else {
       readSchema(value);
   });
 }
+*/
