@@ -2,8 +2,10 @@
 
 ///<reference path="../typings/commander/commander.d.ts"/>
 ///<reference path="../typings/promptly/promptly.d.ts"/>
+///<reference path="../typings/yamljs/yamljs.d.ts"/>
 import * as Commander from "commander";
 import * as Promptly from "promptly";
+import * as YAML from "yamljs";
 
 import { JsonConfigurationFileWriter } from "./json-configuration-file-writer";
 import { JsonSchemaReader } from "./json-schema-reader";
@@ -18,8 +20,10 @@ let configurit = new Commander.Command();
 configurit
   .version("")
   .option("-v, --verbose", "Find out what's happening")
-  .option("-s, --schemaLocation [location]", "Where is that schema")
-  .option("-o, --outputFile [location]", "Where it's gonna be")
+  .option("-s, --schema-location [location]", "Where is that schema")
+  .option("-o, --output-file [location]", "Where it's gonna be")
+  .option("-y, --yaml [location]", "I wants YAML")
+  .option("-p, --pretty [location]", "It should be purtteh")
   .parse(process.argv);
 
 let generator = new ConfigGenerator();
@@ -53,8 +57,8 @@ let readSchema = (path: string) => {
 
 let checkOutput = (config: any) => {
 
-  if (configurit["outputFile"]) {
-    save(config, configurit["outputFile"]);
+  if (configurit["output-file"]) {
+    save(config, configurit["output-file"]);
   }
 
   Promptly.prompt("Output file: ", { validator: null }, (err: Error, value: string) => {
@@ -65,14 +69,28 @@ let checkOutput = (config: any) => {
 
 let save = (config: any, path: string) => {
 
-    FileSystem.writeFile(path, JSON.stringify(config), (error: Error) => {
+   let fileText = "";
+   let prettySpacing = 0;
+
+   if (configurit["pretty"]) {
+      prettySpacing = 3;
+   }
+
+   if (configurit["yaml"]) {
+      fileText = YAML.stringify(config, 4, prettySpacing);
+   }
+   else {
+      fileText = JSON.stringify(config, null, prettySpacing);
+   }
+
+    FileSystem.writeFile(path, fileText, (error: Error) => {
       console.log("done writing");
       process.exit(0);
     });
 }
 
-if(configurit["schemaLocation"]) {
-    readSchema(configurit["schemaLocation"]);
+if(configurit["schema-location"]) {
+    readSchema(configurit["schema-location"]);
 }
 else {
   Promptly.prompt("Schema location: ", { validator: null }, (err: Error, value: string) => {
