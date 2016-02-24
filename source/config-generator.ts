@@ -45,9 +45,9 @@ export class ConfigGenerator {
 
   public async getUserProperty(propertyName: string, propertyDefinition: any, currentValue: any): Promise<any> {
 
-    return new Promise<string>((resolve, reject) => {
+    return new Promise<any>((resolve, reject) => {
 
-      let prompt = "\r\n";
+      let prompt = "\r\n\r\n";
 
       if (propertyDefinition.title) {
          prompt += propertyDefinition.title + "\r\n";
@@ -66,7 +66,26 @@ export class ConfigGenerator {
         if (err) {
           reject(err);
         }
-        resolve(value);
+
+        if (propertyDefinition.type === "boolean") {
+          if (value === "true" || value === "t" || value === "y" || value === "yes") {
+            resolve(true);
+          }
+          else {
+            resolve(false);
+          }
+        }
+        else if (propertyDefinition.type === "number") {
+          resolve(parseFloat(value));
+        }
+        else if(propertyDefinition.type === "integer") {
+          resolve(parseInt(value));
+        }
+        else {
+          resolve(value);
+        }
+
+
       });
     })
   }
@@ -80,7 +99,9 @@ export class ConfigGenerator {
 
     if (nextPropertyName) {
       if (schemaDefinition.properties[nextPropertyName].type === "object") {
-        o[nextPropertyName] = {};
+        if (!o[nextPropertyName]) {
+          o[nextPropertyName] = {};
+        }
         this._getObject(schemaDefinition.properties[nextPropertyName], o[nextPropertyName], () => { this._getNextProperty(schemaDefinition, currentIndex + 1, o, resolve)})
       }
       else {
