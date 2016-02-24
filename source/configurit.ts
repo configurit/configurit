@@ -19,7 +19,7 @@ let configurit = new Commander.Command();
 
 configurit
   .version("")
-  .option("-v, --verbose", "Find out what's happening")
+  //.option("-v, --verbose", "Find out what's happening")
   .option("-s, --schema-location [location]", "Where is that schema")
   .option("-o, --output-file [location]", "Where it's gonna be")
   .option("-y, --yaml [location]", "I wants YAML")
@@ -29,14 +29,25 @@ configurit
 let generator = new ConfigGenerator();
 
 let getDetails = (currentConfig?: any) => {
-  generator.getUserInput(true, true).then((config: any) => {
-    console.log(config);
-    Promptly.confirm("Lookin good?", (err: Error, value: string) => {
-        //configWriter.set("name", value);
-        console.log(value);
+  generator.getUserInput(currentConfig, true, true).then((config: any) => {
+    let fileText = "";
+    let prettySpacing = 0;
+
+    if (configurit["pretty"]) {
+       prettySpacing = 3;
+    }
+
+    if (configurit["yaml"]) {
+       fileText = YAML.stringify(config, 4, prettySpacing);
+    }
+    else {
+       fileText = JSON.stringify(config, null, prettySpacing);
+    }
+    console.log(fileText);
+    Promptly.confirm("Lookin good?", (err: Error, value: boolean) => {
 
         if (value) {
-          checkOutput(config);
+          checkOutput(fileText);
         }
         else {
           getDetails(config);
@@ -55,35 +66,21 @@ let readSchema = (path: string) => {
   getDetails() });
 }
 
-let checkOutput = (config: any) => {
+let checkOutput = (configString: string) => {
 
   if (configurit["output-file"]) {
-    save(config, configurit["output-file"]);
+    save(configString, configurit["output-file"]);
   }
 
   Promptly.prompt("Output file: ", { validator: null }, (err: Error, value: string) => {
-    save(config, value);
+    save(configString, value);
 
   });
 }
 
-let save = (config: any, path: string) => {
+let save = (configString: string, path: string) => {
 
-   let fileText = "";
-   let prettySpacing = 0;
-
-   if (configurit["pretty"]) {
-      prettySpacing = 3;
-   }
-
-   if (configurit["yaml"]) {
-      fileText = YAML.stringify(config, 4, prettySpacing);
-   }
-   else {
-      fileText = JSON.stringify(config, null, prettySpacing);
-   }
-
-    FileSystem.writeFile(path, fileText, (error: Error) => {
+    FileSystem.writeFile(path, configString, (error: Error) => {
       console.log("done writing");
       process.exit(0);
     });
