@@ -6,38 +6,9 @@ import * as Promptly from "promptly";
 export class ConfigGenerator {
 
   public constructor() {
-    this._schema = {
-      "properties": {
-        "a": {
-          "title": "Test",
-          "description": "A thing to be tested"
-        },
-        "b": {
-          "title": "Test B",
-          "description": "B thing to be tested"
-        },
-        "c": 3,
-        "child": {
-          "type": "object",
-          "properties": {
-            "1": 1,
-            "2": 2,
-            "3": 3,
-            "grandchild": {
-              "type": "object",
-              "properties": {
-                "1": 1,
-                "2": 2,
-                "3": 3
-              }
-            }
-          }
-        }
-      }
-    };
   }
 
-  private _schema: Object;
+  private _schema: any;
 
   public loadSchema(schema: any) {
     this._schema = schema;
@@ -117,14 +88,39 @@ export class ConfigGenerator {
     this._getNextProperty(schemaDefinition, -1, o, resolve);
   }
 
+  private _getArray(schemaDefinition: any, array: any[], currentIndex: number, resolve: (config: any) => any) {
+    Promptly.confirm("would you like to add to " + schemaDefinition.title, (error: Error, value: boolean) => {
+      if (value) {
+        if (schemaDefinition.items.type === "object") {
+          if (array[currentIndex] === undefined) {
+            array[currentIndex] = {};
+          }
+
+          this._getObject(schemaDefinition.items, array[currentIndex], () => this._getArray(schemaDefinition, array, currentIndex + 1, resolve))
+        }
+        else if (schemaDefinition.items.type === "array") {
+          if (array[currentIndex] === undefined) {
+            array[currentIndex] = [];
+          }
+          this._getArray(schemaDefinition.items, array[currentIndex], 0, () => this._getArray(schemaDefinition, array, currentIndex + 1, resolve))
+        }
+        else {
+            this.getUserProperty("", schemaDefinition.items, array[currentIndex])
+            .then(s => { array[currentIndex] = s; this._getArray(schemaDefinition, array, currentIndex + 1, resolve) } )
+        }
+      }
+      else {
+        resolve(array);
+      }
+    })
+  }
+
   public async getUserInput(currentConfig: any, requiredOnly: boolean, ignoreValidation: boolean): Promise<Configuration> {
 
     return new Promise<Configuration>((resolve, reject) => {
       let config = currentConfig;
 
-      if (!config) {
-        config = {};
-      }
+
       //for (let i in this._schema) {
         /*this.getUserProperty("a").then(s => {config["a"] = s;
           this.getUserProperty("b").then(s => {config["b"] = s;
@@ -132,8 +128,19 @@ export class ConfigGenerator {
           });
         });*/
       //}
+      if (this._schema.type === "array") {
+        if (!config) {
+          config = [];
+        }
+        this._getArray(this._schema, config, 0, resolve);
 
-      this._getObject(this._schema, config, resolve);
+      }
+      else {
+        if (!config) {
+          config = {};
+        }
+        this._getObject(this._schema, config, resolve);
+      }
 
       //resolve(config);
     });

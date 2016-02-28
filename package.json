@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jamesrichford/configurit.git"
+    "url": "git+https://github.com/configurit/configurit.git"
   },
   "keywords": [
     "configuration"
@@ -19,9 +19,9 @@
   "author": "James Richford <=> (=)",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/jamesrichford/configurit/issues"
+    "url": "https://github.com/configurit/configurit/issues"
   },
-  "homepage": "https://github.com/jamesrichford/configurit#readme",
+  "homepage": "https://github.com/configurit/configurit#readme",
   "dependencies": {
     "commander": "^2.9.0",
     "promptly": "^1.0.0",
